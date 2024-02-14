@@ -2,17 +2,15 @@ import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Account, accountSchema } from '../../schemas/account.schema';
+import { Account, accountSchema } from './schemas/account.schema';
 import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { LocalStrategy } from './strategies/local.strategy';
-import { Refresh_Token, refreshTokenSchema } from 'src/schemas/refresh_token.schema';
-import { UserRefreshTokenService } from 'src/common/services/user_refresh_token.service';
-import { UserService } from 'src/common/services/user.service';
+import { Refresh_Token, refreshTokenSchema } from 'src/modules/auth/schemas/refresh_token.schema';
+import { RefreshTokenService } from 'src/shared/services/refresh_token.service';
+import { AccountService } from 'src/shared/services/account.service';
+import { AuthGuard } from '../../shared/guards/auth.guard';
 
 @Module({
   imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({ global: true }),
     MongooseModule.forFeature([
       {
@@ -28,6 +26,11 @@ import { UserService } from 'src/common/services/user.service';
     ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, UserService, UserRefreshTokenService]
+  providers: [
+    AuthService,
+    AccountService,
+    RefreshTokenService,
+    AuthGuard
+  ]
 })
 export class AuthModule { }

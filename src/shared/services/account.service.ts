@@ -1,14 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Account } from 'src/schemas/account.schema';
+import { Account } from 'src/modules/auth/schemas/account.schema';
 import * as bcrypt from 'bcrypt';
-import { SignUpDto } from 'src/api/auth/dto/signup.dto';
-import { AccountDocument } from 'src/interface/Account';
+import { SignUpDto } from 'src/modules/auth/dto/signup.dto';
+import { AccountDocument } from 'src/shared/interfaces/account';
 
 @Injectable()
-export class UserService {
-    logger: Logger = new Logger(UserService.name);;
+export class AccountService {
+    logger: Logger = new Logger(AccountService.name);;
     constructor(
         @InjectModel(Account.name) private accountModel: Model<Account>,
     ) { }
@@ -40,14 +40,6 @@ export class UserService {
         }
 
         return account;
-    }
-
-    findOneAndUpdate(query: any, payload: any): Promise<AccountDocument> {
-        this.logger.log('Updating User.');
-        return this.accountModel.findOneAndUpdate(query, payload, {
-            new: true,
-            upsert: true,
-        });
     }
 
     findOneAndRemove(query: any): Promise<any> {

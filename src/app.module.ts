@@ -1,7 +1,7 @@
-import { Inject, Module } from '@nestjs/common';
+import { Inject, Logger, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule } from './api/auth/auth.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from './config/configuration';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -28,10 +28,11 @@ import { CACHE_MANAGER, CacheModule } from '@nestjs/cache-manager';
   providers: [
     AppService,
     MongodbService,
-    RedisService
+    RedisService,
   ],
 })
 export class AppModule {
+  logger: Logger = new Logger(AppModule.name);
   static port: number;
   constructor(
     @Inject(CACHE_MANAGER) cacheManager,
@@ -42,8 +43,7 @@ export class AppModule {
     const client = cacheManager.store.getClient();
     
     client.on('error', (error: Error)=>{
-      console.error('Cache is error');
-      // console.info(error);
+      this.logger.error(error.message);
     })
   }
 }

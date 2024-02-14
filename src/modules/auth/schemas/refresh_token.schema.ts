@@ -5,7 +5,7 @@ import { Account } from "./account.schema";
 @Schema()
 export class Refresh_Token {
     @Prop({required: true, unique: true, ref: Account.name})
-    userId: mongoose.Schema.Types.ObjectId;
+    accountId: mongoose.Schema.Types.ObjectId;
 
     @Prop({required: true})
     token: string;
