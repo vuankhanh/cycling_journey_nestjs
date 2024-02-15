@@ -24,10 +24,7 @@ export class FormatResponseInterceptor<T>
             map((data) => ({
                 statusCode: context.switchToHttp().getResponse().statusCode,
                 message: data.message,
-                metaData: {
-                    result: data.result,
-                    meta: {} // if this is supposed to be the actual return then replace {} with data.result
-                }
+                metaData: data
             }) as Response<T>),
         );
     }
