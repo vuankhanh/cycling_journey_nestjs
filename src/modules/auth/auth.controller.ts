@@ -68,12 +68,4 @@ export class AuthController {
             throw error;
         }
     }
-
-    @Get('profile')
-    @UseGuards(AuthGuard)
-    @UseInterceptors(FormatResponseInterceptor)
-    getProfile(@Request() req) {
-        return req.payload;
-    }
-
 }

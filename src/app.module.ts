@@ -9,6 +9,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MongodbService } from './providers/database/mongodb/mongodb.service';
 import { RedisService } from './providers/cache/redis/redis.service';
 import { CACHE_MANAGER, CacheModule } from '@nestjs/cache-manager';
+import { MilestoneModule } from './modules/milestone/milestone.module';
+import { AlbumModule } from './modules/album/album.module';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { CACHE_MANAGER, CacheModule } from '@nestjs/cache-manager';
     }),
     AuthModule,
     ServerConfigModule,
+    MilestoneModule,
+    AlbumModule,
   ],
   controllers: [AppController],
   providers: [

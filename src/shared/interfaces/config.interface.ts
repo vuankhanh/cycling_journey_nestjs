@@ -1,3 +1,5 @@
+import { IFacebookUser } from "./facebook.interface";
+
 export interface IConfiguration {
-    facebookUser: any;
+    facebookUser: IFacebookUser;
 }

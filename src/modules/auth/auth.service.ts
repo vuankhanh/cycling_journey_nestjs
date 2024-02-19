@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshTokenService } from 'src/shared/services/refresh_token.service';
 import { AccountService } from 'src/shared/services/account.service';
-import { AccountDocument } from 'src/shared/interfaces/account.interface';
+import { AccountDocument } from './schemas/account.schema';
 
 @Injectable()
 export class AuthService {

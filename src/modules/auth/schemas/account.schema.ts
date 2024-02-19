@@ -1,8 +1,10 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import mongoose from "mongoose";
+import { HydratedDocument } from "mongoose";
 const roleEnums = ['user', 'admin'];
 
+export type AccountDocument = HydratedDocument<Account>;
 @Schema({
+    collection: 'account',
     timestamps: true
 })
 export class Account {

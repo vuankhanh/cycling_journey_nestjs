@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Account } from 'src/modules/auth/schemas/account.schema';
+import { Account, AccountDocument } from 'src/modules/auth/schemas/account.schema';
 import * as bcrypt from 'bcrypt';
 import { SignUpDto } from 'src/modules/auth/dto/signup.dto';
-import { AccountDocument } from 'src/shared/interfaces/account.interface';
+
 
 @Injectable()
 export class AccountService {

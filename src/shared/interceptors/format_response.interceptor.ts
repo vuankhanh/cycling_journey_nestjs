@@ -23,7 +23,7 @@ export class FormatResponseInterceptor<T>
         return next.handle().pipe(
             map((data) => ({
                 statusCode: context.switchToHttp().getResponse().statusCode,
-                message: data.message,
+                message: 'success',
                 metaData: data
             }) as Response<T>),
         );
