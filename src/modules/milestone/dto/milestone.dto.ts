@@ -1,9 +1,11 @@
-import { IsDate, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsDateString, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { ILocation } from "src/shared/interfaces/location.interface";
 
 export class MilestoneDto {
     @IsNotEmpty({ message: 'NumbericalOrder is required' })
-    @IsNumber({}, { message: 'Username must be a string' })
-    readonly numericalOrder: number;
+    @IsNumber({}, { message: 'NumericalOrder must be a number'})
+    @IsOptional()
+    numericalOrder?: number;
 
     @IsNotEmpty({ message: 'Name is required' })
     @IsString({ message: 'Name must be a string' })
@@ -14,12 +16,13 @@ export class MilestoneDto {
     readonly address: string;
 
     @IsNotEmpty({ message: 'Datetime is required' })
-    @IsDate({ message: 'Datetime must be a date' })
+    @IsDateString({}, { message: 'Datetime must be a date' })
     readonly dateTime: Date;
 
     @IsNotEmpty({ message: 'Coordinates is required' })
-    readonly coordinates: Location;
+    readonly coordinates: ILocation;
 
-    @IsNotEmpty({ message: 'AlbumId is required' })
-    readonly albumId: string;
+    @IsMongoId()
+    @IsOptional()
+    albumId?: string;
 }

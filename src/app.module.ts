@@ -11,6 +11,8 @@ import { RedisService } from './providers/cache/redis/redis.service';
 import { CACHE_MANAGER, CacheModule } from '@nestjs/cache-manager';
 import { MilestoneModule } from './modules/milestone/milestone.module';
 import { AlbumModule } from './modules/album/album.module';
+import { MulterModule } from '@nestjs/platform-express';
+import { MulterConfigService } from './providers/common/multer.service';
 
 @Module({
   imports: [
@@ -25,6 +27,10 @@ import { AlbumModule } from './modules/album/album.module';
       imports: [ConfigModule],
       useClass: RedisService,
     }),
+    MulterModule.registerAsync({
+      imports: [ConfigModule],
+      useClass: MulterConfigService,
+    }),
     AuthModule,
     ServerConfigModule,
     MilestoneModule,
@@ -35,6 +41,7 @@ import { AlbumModule } from './modules/album/album.module';
     AppService,
     MongodbService,
     RedisService,
+    MulterConfigService,
   ],
 })
 export class AppModule {
@@ -47,8 +54,8 @@ export class AppModule {
     AppModule.port = this.configService.get<number>('app.port');
 
     const client = cacheManager.store.getClient();
-    
-    client.on('error', (error: Error)=>{
+
+    client.on('error', (error: Error) => {
       this.logger.error(error.message);
     })
   }

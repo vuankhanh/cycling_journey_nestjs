@@ -3,8 +3,6 @@ import { SignUpDto } from './dto/signup.dto';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/signin.dto';
 import { AccountService } from '../../shared/services/account.service';
-import { AuthGuard } from '../../shared/guards/auth.guard';
-import { FormatResponseInterceptor } from 'src/shared/interceptors/format_response.interceptor';
 
 @Controller('auth')
 export class AuthController {
