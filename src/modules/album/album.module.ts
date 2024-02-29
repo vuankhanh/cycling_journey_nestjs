@@ -3,8 +3,9 @@ import { AlbumService } from './album.service';
 import { AlbumController } from './album.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Album, albumSchema } from './schema/album.schema';
-import { RouteExistsGuard } from './guards/route_exists/route_exists.guard';
+import { ValidateCreateAlbumGuard } from './guards/validate_create_album.guard';
 import { ConfigService } from '@nestjs/config';
+import { ImageConverterUtil } from 'src/shared/utils/image_converter.util';
 
 @Module({
   imports: [
@@ -17,6 +18,6 @@ import { ConfigService } from '@nestjs/config';
     ])
   ],
   controllers: [AlbumController],
-  providers: [AlbumService, RouteExistsGuard, ConfigService],
+  providers: [AlbumService, ValidateCreateAlbumGuard, ConfigService],
 })
 export class AlbumModule {}

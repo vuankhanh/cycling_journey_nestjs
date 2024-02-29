@@ -1,9 +1,9 @@
 import { CanActivate, ConflictException, ExecutionContext, Injectable } from '@nestjs/common';
-import { AlbumService } from '../../album.service';
+import { AlbumService } from '../album.service';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class RouteExistsGuard implements CanActivate {
+export class ValidateCreateAlbumGuard implements CanActivate {
   constructor(
     private readonly albumService: AlbumService,
     private readonly configService: ConfigService
@@ -12,8 +12,11 @@ export class RouteExistsGuard implements CanActivate {
     context: ExecutionContext,
   ): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
+    const contentType = request.headers['content-type'];
+    const checkContentType: boolean = contentType && contentType.includes('multipart/form-data');
+    
     const name = request.query.name;
-    if (!name) {
+    if (!name || !checkContentType) {
       return false;
     }
 

@@ -4,6 +4,7 @@ import * as fse from 'fs-extra';
 
 import toNoAccentVnHepler from '../shared/helpers/convert_vietnamese_to_no_accents.helper';
 import { BadRequestException } from "@nestjs/common";
+import { IFileType } from "src/shared/interfaces/files.interface";
 
 export const multerOptions: MulterOptions = {
   storage: multer.diskStorage({
@@ -30,4 +31,42 @@ export const multerOptions: MulterOptions = {
     }
     return cb(null, true);
   }
+}
+
+const imageEnums = ['webp', 'jpeg', 'png'] as const;
+const videoEnums = ['mp4', 'quicktime', 'webm'] as const;
+
+export const imageTypes: { [key in typeof imageEnums[number]]: IFileType } = {
+  webp: {
+    type: 'image/webp',
+    extension: 'webp'
+  },
+  jpeg: {
+    type: 'image/jpeg',
+    extension: 'jpeg'
+  },
+  png: {
+    type: 'image/png',
+    extension: 'png'
+  },
+};
+
+export const videoTypes: { [key in typeof videoEnums[number]]: IFileType } = {
+  mp4: {
+    type: 'video/mp4',
+    extension: 'mp4'
+  },
+  quicktime: {
+    type: 'video/quicktime',
+    extension: 'mov'
+  },
+  webm: {
+    type: 'video/webm',
+    extension: 'webm'
+  }
+};
+
+export const illustration = {
+  width: 1280,
+  height: 720
 }
