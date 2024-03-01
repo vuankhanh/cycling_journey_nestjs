@@ -18,7 +18,7 @@ export class AlbumService implements IBasicService<AlbumDto, Album> {
     return await this.albumModel.countDocuments(condition);
   }
 
-  async create(data: AlbumDto) {
+  async create(data: Album) {
     const album = new this.albumModel(data);
     await album.save();
     return album;
@@ -34,12 +34,12 @@ export class AlbumService implements IBasicService<AlbumDto, Album> {
     return album;
   }
 
-  async replace(id: string, data: AlbumDto) {
+  async replace(id: string, data: Album) {
     const milestone = await this.albumModel.findByIdAndUpdate(id, data, { new: true });
     return milestone;
   }
 
-  async modify(id: string, data: Partial<AlbumDto>) {
+  async modify(id: string, data: Partial<Album>) {
     const milestone = await this.albumModel.findByIdAndUpdate(id, data, { new: true });
     return milestone;
   }

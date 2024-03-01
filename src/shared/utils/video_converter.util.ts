@@ -12,24 +12,6 @@ ffmpeg.setFfprobePath(ffprobePath);
 @Injectable()
 export class VideoConverterUtil {
   constructor() { }
-  
-  static generateThumbnail(path: string, destination: string, filename: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const thumbnailName = filename + '-thumbnail' + '.'+ imageTypes.webp.extension;
-      const fileOut = destination + '/' + thumbnailName;
-      ffmpeg(path)
-        .thumbnail({
-          timestamps: ['50%'],
-          filename: thumbnailName,
-          size: '400x225',
-          folder: destination
-        }).on('end', function (_) {
-          resolve(fileOut)
-        }).on('error', (error) => {
-          reject(error)
-        });
-    })
-  }
 
   static convert(file: Express.Multer.File): Promise<Express.Multer.File> {
     // start the progress bar with a total value of 200 and start value of 0
@@ -57,6 +39,26 @@ export class VideoConverterUtil {
           console.log(error);
           reject(error)
         }).run()
+    })
+  }
+
+  static generateThumbnail(file: Express.Multer.File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const filename = path.parse(file.filename).name;
+      const thumbnailName = filename + '-thumbnail' + '.'+ imageTypes.webp.extension;
+      const fileOut = file.destination + '/' + thumbnailName;
+      
+      ffmpeg(file.path)
+        .thumbnail({
+          timestamps: ['50%'],
+          filename: thumbnailName,
+          size: '400x225',
+          folder: file.destination
+        }).on('end', function (_) {
+          resolve(fileOut)
+        }).on('error', (error) => {
+          reject(error)
+        });
     })
   }
 }

@@ -27,7 +27,8 @@ export class ValidateCreateAlbumGuard implements CanActivate {
 
     const albumFolder = this.configService.get('folder.album');
     request['customParams'] = {};
-    request['customParams.albumFolder'] = albumFolder;
+    
+    request.customParams.albumFolder = albumFolder;
     return true;
   }
 }

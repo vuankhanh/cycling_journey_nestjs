@@ -11,10 +11,10 @@ export const multerOptions: MulterOptions = {
     destination: (req, file, cb) => {
       const name: string = req.query.name as string;
       const albumFolder = 'cycling-journey-album';
-      const destination = req['customParams.albumFolder'];
+      const destination = req['customParams'].albumFolder;
       const relativePath = albumFolder + '/' + toNoAccentVnHepler(name);
       const absolutePath = destination + '/' + relativePath;
-      req['customParams.relativePath'] = relativePath;
+      req['customParams'].relativePath = relativePath;
       fse.ensureDirSync(absolutePath);
       cb(null, absolutePath);
     },

@@ -30,9 +30,10 @@ export class ImageConverterUtil {
     return newFile;
   }
 
-  static async thumbnail(path: string, destination: string, filename: string): Promise<string> {
-    const fileOut = destination + '/' + filename + '-thumbnail' + '.' + imageTypes.webp.extension;
-    await sharp(path).resize({ width: 400 }).withMetadata().toFile(fileOut);
+  static async thumbnail(file: Express.Multer.File): Promise<string> {
+    const filename = path.parse(file.filename).name;
+    const fileOut = file.destination + '/' + filename + '-thumbnail' + '.' + imageTypes.webp.extension;
+    await sharp(file.path).resize({ width: 400 }).withMetadata().toFile(fileOut);
     return fileOut;
   }
 }
