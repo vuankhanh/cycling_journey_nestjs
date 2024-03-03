@@ -3,6 +3,7 @@ import { SignUpDto } from './dto/signup.dto';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/signin.dto';
 import { AccountService } from '../../shared/services/account.service';
+import { Account } from './schemas/account.schema';
 
 @Controller('auth')
 export class AuthController {
@@ -23,7 +24,15 @@ export class AuthController {
         throw new ConflictException('User Already Exist');
       }
 
-      const account = await this.accountService.create(signUpDto);
+      const signUp = new Account(
+        signUpDto.username,
+        signUpDto.password,
+        signUpDto.firstName,
+        signUpDto.lastName,
+        signUpDto.role,
+        signUpDto.email
+      );
+      const account = await this.accountService.create(signUp);
 
       const token = this.authService.createToken(account);
       const refreshToken = await this.authService.createRefreshToken(account);

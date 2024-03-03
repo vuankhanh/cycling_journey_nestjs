@@ -1,18 +1,16 @@
 import { Inject, Logger, Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { ServerConfigModule } from './modules/server_config/server_config.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from './config/configuration';
 import { MongooseModule } from '@nestjs/mongoose';
-import { MongodbService } from './providers/database/mongodb/mongodb.service';
-import { RedisService } from './providers/cache/redis/redis.service';
+import { MongodbProvider } from './providers/database/mongodb.provider';
+import { RedisProvider } from './providers/cache/redis.provider';
 import { CACHE_MANAGER, CacheModule } from '@nestjs/cache-manager';
 import { MilestoneModule } from './modules/milestone/milestone.module';
 import { AlbumModule } from './modules/album/album.module';
 import { MulterModule } from '@nestjs/platform-express';
-import { MulterConfigService } from './providers/common/multer.service';
+import { MulterConfigProvider } from './providers/common/multer.provider';
 
 @Module({
   imports: [
@@ -21,28 +19,23 @@ import { MulterConfigService } from './providers/common/multer.service';
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useClass: MongodbService,
+      useClass: MongodbProvider,
     }),
     CacheModule.registerAsync({
       imports: [ConfigModule],
-      useClass: RedisService,
+      useClass: RedisProvider,
     }),
     MulterModule.registerAsync({
       imports: [ConfigModule],
-      useClass: MulterConfigService,
+      useClass: MulterConfigProvider,
     }),
     AuthModule,
     ServerConfigModule,
     MilestoneModule,
     AlbumModule,
   ],
-  controllers: [AppController],
-  providers: [
-    AppService,
-    MongodbService,
-    RedisService,
-    MulterConfigService,
-  ],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {
   logger: Logger = new Logger(AppModule.name);

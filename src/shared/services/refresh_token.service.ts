@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { Refresh_Token } from 'src/modules/auth/schemas/refresh_token.schema';
 
 @Injectable()
@@ -15,13 +15,14 @@ export class RefreshTokenService {
     return this.refreshTokenModel.findOne({ accountId, token: refreshToken });
   }
 
-  create(accountId: string, token: string, expiresAt: Date) {
+  create(accountId: mongoose.Types.ObjectId, token: string, expiresAt: Date) {
     this.logger.log('Creating refresh token.');
-    const newRefreshToken = new this.refreshTokenModel({ accountId, token, expiresAt });
+    const refreshToken = new Refresh_Token(accountId, token, expiresAt);
+    const newRefreshToken = new this.refreshTokenModel(refreshToken);
     return newRefreshToken.save();
   }
 
-  findOneAndUpdate(accountId: string, token: string, expiresAt: Date) {
+  findOneAndUpdate(accountId: mongoose.Types.ObjectId, token: string, expiresAt: Date) {
     this.logger.log('Updating refresh token.');
     return this.refreshTokenModel.findOneAndUpdate(
       { accountId },
@@ -30,7 +31,7 @@ export class RefreshTokenService {
     );
   }
 
-  findOneAndRemove(accountId: string) {
+  findOneAndRemove(accountId: mongoose.Types.ObjectId) {
     this.logger.log('Deleting refresh token.');
     return this.refreshTokenModel.findOneAndDelete({ accountId })
   }

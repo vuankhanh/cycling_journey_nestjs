@@ -5,11 +5,12 @@ import { MongoIdDto } from 'src/shared/dto/mongodb.dto';
 import { MilestoneDto } from './dto/milestone.dto';
 import { AuthGuard } from 'src/shared/guards/auth.guard';
 import { MongoExceptionFilter } from 'src/shared/filters/mongo_exception.filter';
+import { Milestone } from './schemas/milestone.schema';
 
 @Controller('milestone')
 export class MilestoneController {
-  constructor(private readonly milestoneService: MilestoneService) {}
-  
+  constructor(private readonly milestoneService: MilestoneService) { }
+
   @Get()
   @UseInterceptors(FormatResponseInterceptor)
   async getAll() {
@@ -27,7 +28,15 @@ export class MilestoneController {
   @UseGuards(AuthGuard)
   @UseInterceptors(FormatResponseInterceptor)
   async create(@Body() milestoneDto: MilestoneDto) {
-    return await this.milestoneService.create(milestoneDto);
+    const milestone: Milestone = new Milestone(
+      milestoneDto.numericalOrder,
+      milestoneDto.name,
+      milestoneDto.address,
+      milestoneDto.dateTime,
+      milestoneDto.coordinates,
+      milestoneDto.albumId
+    );
+    return await this.milestoneService.create(milestone);
   }
 
   @Put()
@@ -35,7 +44,15 @@ export class MilestoneController {
   @UseGuards(AuthGuard)
   @UseInterceptors(FormatResponseInterceptor)
   async replace(@Param(new ValidationPipe({ whitelist: true })) { id }: MongoIdDto, @Body() milestoneDto: MilestoneDto) {
-    return await this.milestoneService.replace(id, milestoneDto);
+    const milestone: Milestone = new Milestone(
+      milestoneDto.numericalOrder,
+      milestoneDto.name,
+      milestoneDto.address,
+      milestoneDto.dateTime,
+      milestoneDto.coordinates,
+      milestoneDto.albumId
+    );
+    return await this.milestoneService.replace(id, milestone);
   }
 
   @Patch(':id')

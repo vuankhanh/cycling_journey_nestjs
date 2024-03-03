@@ -6,7 +6,15 @@ import toNoAccentVnHepler from '../shared/helpers/convert_vietnamese_to_no_accen
 import { BadRequestException } from "@nestjs/common";
 import { IFileType } from "src/shared/interfaces/files.interface";
 
-export const multerOptions: MulterOptions = {
+const fileFilter = (req, file, cb) => {
+  const match = ['image/png', 'image/jpeg', 'video/mp4', 'video/quicktime', 'video/webm'];
+  if (match.indexOf(file.mimetype) === -1) {
+    return cb(new BadRequestException('Invalid file type'), false);
+  }
+  return cb(null, true);
+}
+
+export const initializationMulterOptions: MulterOptions = {
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
       const name: string = req.query.name as string;
@@ -24,13 +32,25 @@ export const multerOptions: MulterOptions = {
       cb(null, filename);
     },
   }),
-  fileFilter: (req, file, cb) => {
-    const match = ['image/png', 'image/jpeg', 'video/mp4', 'video/quicktime', 'video/webm'];
-    if (match.indexOf(file.mimetype) === -1) {
-      return cb(new BadRequestException('Invalid file type'), false);
-    }
-    return cb(null, true);
-  }
+  fileFilter
+}
+
+export const modificationMulterOptions: MulterOptions = {
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const destination = req['customParams'].albumFolder;
+      const relativePath = req['customParams'].relativePath;
+      const absolutePath = destination + '/' + relativePath;
+      fse.ensureDirSync(absolutePath);
+      return cb(null, absolutePath);
+    },
+    filename: (req, file, cb) => {
+      const albumName = req['customParams'].relativePath.split('/').slice(-1)[0];
+      const filename = `${Date.now()}-${albumName}-${file.originalname}`;
+      cb(null, filename);
+    },
+  }),
+  fileFilter
 }
 
 const imageEnums = ['webp', 'jpeg', 'png'] as const;

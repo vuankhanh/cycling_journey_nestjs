@@ -1,4 +1,5 @@
 import { IsDateString, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import mongoose, { ObjectId } from "mongoose";
 import { ILocation } from "src/shared/interfaces/location.interface";
 
 export class MilestoneDto {
@@ -24,5 +25,5 @@ export class MilestoneDto {
 
     @IsMongoId()
     @IsOptional()
-    albumId?: string;
+    albumId?: mongoose.Types.ObjectId;
 }

@@ -3,8 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Account, AccountDocument } from 'src/modules/auth/schemas/account.schema';
 import * as bcrypt from 'bcrypt';
-import { SignUpDto } from 'src/modules/auth/dto/signup.dto';
-
 
 @Injectable()
 export class AccountService {
@@ -17,12 +15,12 @@ export class AccountService {
     return this.accountModel.findOne(query).select('+password');
   }
 
-  async create(signupDto: SignUpDto): Promise<AccountDocument> {
+  async create(signup: Account): Promise<AccountDocument> {
     this.logger.log('Creating user.');
 
-    const hashedPassword = await bcrypt.hash(signupDto.password, 12);
+    const hashedPassword = await bcrypt.hash(signup.password, 12);
 
-    const newUser = new this.accountModel(signupDto);
+    const newUser = new this.accountModel(signup);
     newUser.password = hashedPassword;
     return newUser.save();
   }
