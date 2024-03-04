@@ -3,8 +3,9 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
+  BadRequestException,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 export interface Response<T> {
@@ -21,11 +22,16 @@ export class FormatResponseInterceptor<T>
     next: CallHandler,
   ): Observable<Response<T>> {
     return next.handle().pipe(
-      map((data) => ({
-        statusCode: context.switchToHttp().getResponse().statusCode,
-        message: 'success',
-        metaData: data
-      }) as Response<T>),
-    );
+      map((data) => {
+        if (!data) {
+          throw new BadRequestException('Data not found');
+        }
+        return {
+          statusCode: context.switchToHttp().getResponse().statusCode,
+          message: 'success',
+          metaData: data
+        } as Response<T>
+      })
+    )
   }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, UseFilters, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put, Query, Req, UseFilters, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { MilestoneService } from './milestone.service';
 import { FormatResponseInterceptor } from 'src/shared/interceptors/format_response.interceptor';
 import { MongoIdDto } from 'src/shared/dto/mongodb.dto';
@@ -6,6 +6,7 @@ import { MilestoneDto } from './dto/milestone.dto';
 import { AuthGuard } from 'src/shared/guards/auth.guard';
 import { MongoExceptionFilter } from 'src/shared/filters/mongo_exception.filter';
 import { Milestone } from './schemas/milestone.schema';
+import { PagingDto } from 'src/shared/dto/paging.dto';
 
 @Controller('milestone')
 export class MilestoneController {
@@ -13,8 +14,12 @@ export class MilestoneController {
 
   @Get()
   @UseInterceptors(FormatResponseInterceptor)
-  async getAll() {
-    return await this.milestoneService.getAll();
+  async getAll(
+    @Query(new ValidationPipe({ transform: true })) pagingDto: PagingDto
+  ) {
+    const page = pagingDto.page || 1;
+    const size = pagingDto.size || 10;
+    return await this.milestoneService.getAll(page, size);
   }
 
   @Get(':id')

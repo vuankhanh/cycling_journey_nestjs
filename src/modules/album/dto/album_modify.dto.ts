@@ -1,16 +1,21 @@
 import { Transform, Type } from "class-transformer";
-import { IsArray, IsMongoId, IsOptional, IsString } from "class-validator";
-import { MongoIdDto } from "src/shared/dto/mongodb.dto";
+import { IsArray, IsMongoId, IsNumber, IsNumberString, IsOptional, IsString } from "class-validator";
 
 export class AlbumModifyDto {
-  @IsString()
   @IsOptional()
+  @IsString()
   name: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   description: string;
 
+  @IsOptional()
+  @Transform(({ value }) => Number(value))
+  @IsNumber({}, { message: 'IsMain must be a number' })
+  isMain: number;
+
+  @IsOptional()
   @Transform(({ value }) => {
     return JSON.parse(value)
   }, { toClassOnly: true })

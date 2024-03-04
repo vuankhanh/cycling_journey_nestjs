@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UploadedFiles, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ValidateCreateAlbumGuard } from './guards/validate_create_album.guard';
@@ -14,9 +14,9 @@ import { AuthGuard } from 'src/shared/guards/auth.guard';
 import { AlbumModifyDto } from './dto/album_modify.dto';
 import { MongoIdDto } from 'src/shared/dto/mongodb.dto';
 import { ValidateModifyAlbumGuard } from './guards/validate_modify_album.guard';
-import { Request } from 'express';
+import { PagingDto } from 'src/shared/dto/paging.dto';
+import { ItemsFilterDto } from './dto/items_filter.dto';
 import mongoose from 'mongoose';
-import { addAbortSignal } from 'stream';
 
 @Controller('album')
 export class AlbumController {
@@ -26,8 +26,23 @@ export class AlbumController {
 
   @Get()
   @UseInterceptors(FormatResponseInterceptor)
-  async getAll() {
-    return await this.albumService.getAll();
+  async getAll(
+    @Query(new ValidationPipe({ transform: true })) pagingDto: PagingDto
+  ) {
+    const page = pagingDto.page || 1;
+    const size = pagingDto.size || 10;
+    return await this.albumService.getAll(page, size);
+  }
+
+  @Get('/detail')
+  @UseInterceptors(FormatResponseInterceptor)
+  async getDetail(
+    @Query(ValidationPipe) itemsFilterDto: ItemsFilterDto
+  ) {
+    
+    //Chỉ cần 1 trong 2 query param là id và route. Nếu có cả 2 thì lấy route
+    const query = itemsFilterDto.route ? { route: itemsFilterDto.route } : { _id: new mongoose.Types.ObjectId(itemsFilterDto.id) };
+    return await this.albumService.getDetail(query);
   }
 
   @Post()
@@ -68,7 +83,6 @@ export class AlbumController {
     FormatResponseInterceptor
   )
   async modify(
-    @Req() req: Request,
     @Param(new ValidationPipe({ whitelist: true })) { id }: MongoIdDto,
     @Body(new ValidationPipe({ transform: true })) body: AlbumModifyDto,
     @UploadedFiles(MediaProcessPipe) medias: Array<IMedia>
@@ -85,9 +99,7 @@ export class AlbumController {
       partialAlbumDoc.description = body.description;
     }
 
-    const filesWillRemove: Array<mongoose.Types.ObjectId> = body.filesWillRemove.map(file => new mongoose.Types.ObjectId(file));
-
-    return await this.albumService.modifyMedias(id, partialAlbumDoc, filesWillRemove, medias);
+    return await this.albumService.modifyMedias(id, partialAlbumDoc, body.filesWillRemove, medias);
   }
 
 }

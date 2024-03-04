@@ -30,69 +30,88 @@ export class AlbumService implements IBasicService<Album> {
     return album;
   }
 
-  async getAll() {
-    const albums = await this.albumModel.find().lean();
-    return albums;
+  async getAll(page: number, size: number) {
+    const countTotal = await this.albumModel.countDocuments({});
+    const albumsAggregate = await this.albumModel.aggregate(
+      [
+        {
+          $addFields: {
+            mediaItems: { $sum: { $size: "$media" } }
+          }
+        }, {
+          $project: {
+            media: 0
+          }
+        },
+        { $skip: size * (page - 1) },
+        { $limit: size },
+      ]
+    );
+
+    const metaData = {
+      data: albumsAggregate,
+      paging: {
+        totalItems: countTotal,
+        size: size,
+        page: page,
+        totalPages: Math.ceil(countTotal / size),
+      }
+    };
+    return metaData;
   }
 
-  async getDetail(id: mongoose.Types.ObjectId) {
-    const album = await this.albumModel.findById(id);
+  async getDetail(query: Object) {
+    const album = await this.tranformToDetaiData(query);
+
     return album;
   }
 
-  async replace(id: mongoose.Types.ObjectId, data: Album) {
+  async replace(id: string, data: Album) {
     const milestone = await this.albumModel.findByIdAndUpdate(id, data, { new: true });
     return milestone;
   }
 
   async modifyMedias(
-    id: mongoose.Types.ObjectId,
+    id: string,
     updateQuery: Partial<Album>,
-    filesWillRemove: Array<mongoose.Types.ObjectId>,
+    filesWillRemove: Array<mongoose.Types.ObjectId | string>,
     newFiles: Array<IMedia>
   ) {
     const arrPromise: Array<Promise<any>> = [];
 
     const query = { $set: updateQuery };
-    
+
     if (newFiles.length) {
-      console.log(newFiles);
-      
       const newItems = await this.mediaModel.insertMany(newFiles);
-      console.log(newItems);
-      
       query['$push'] = {
         media: { $each: newItems }
       }
     }
-    
+
     const updateAlbum = this.albumModel.findByIdAndUpdate(id, query, { safe: true, new: true });
     arrPromise.push(updateAlbum);
 
-    if (filesWillRemove.length) {
+    if (filesWillRemove?.length) {
       const removeValueQuery = {
         $pull: {
           media: { _id: { $in: filesWillRemove } }
         }
       }
-      console.log(removeValueQuery.$pull.media._id);
-      const removeItem = this.albumModel.findByIdAndUpdate(id, removeValueQuery, { new: true });
-      
+      const removeItem = this.albumModel.findByIdAndUpdate(id, removeValueQuery, { safe: true, new: true });
       arrPromise.push(removeItem);
     }
-    
+
     await Promise.all(arrPromise);
-    const conditional = { _id: new mongoose.Types.ObjectId(id) };
-    const album = await this.tranformToDetaiData(conditional);
+    const album = await this.tranformToDetaiData({ _id: new mongoose.Types.ObjectId(id) });
     return album;
   }
 
-  async modify(id: mongoose.Types.ObjectId, data: Partial<Album>) {
+  async modify(id: string, data: Partial<Album>) {
     const milestone = await this.albumModel.findByIdAndUpdate(id, data, { new: true });
     return milestone;
   }
 
-  async remove(id: mongoose.Types.ObjectId) {
+  async remove(id: string) {
     const milestone = await this.albumModel.findByIdAndDelete(id);
     return milestone;
   }
