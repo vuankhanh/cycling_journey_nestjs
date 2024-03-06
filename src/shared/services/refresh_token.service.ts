@@ -12,7 +12,8 @@ export class RefreshTokenService {
   
   findOne(accountId: string, refreshToken: string) {
     this.logger.log('Finding refresh token.');
-    return this.refreshTokenModel.findOne({ accountId, token: refreshToken });
+    let accountIdObj = new mongoose.Types.ObjectId(accountId);
+    return this.refreshTokenModel.findOne({ accountId: accountIdObj, token: refreshToken });
   }
 
   create(accountId: mongoose.Types.ObjectId, token: string, expiresAt: Date) {

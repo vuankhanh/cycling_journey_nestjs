@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument } from "mongoose";
 import { Album } from "src/modules/album/schema/album.schema";
 import { ILocation } from "src/shared/interfaces/location.interface";
+import { IMilestone } from "src/shared/interfaces/milestone.interface";
 
 export type MilestoneDocument = HydratedDocument<Milestone>;
 
@@ -24,7 +25,7 @@ class Location implements ILocation {
   collection: 'milestone',
   timestamps: true
 })
-export class Milestone {
+export class Milestone implements IMilestone {
   @Prop({
     type: Number,
     unique: [true, 'Numerical order must be unique'],

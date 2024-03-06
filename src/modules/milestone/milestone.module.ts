@@ -16,5 +16,6 @@ import { Milestone, milestoneSchema } from './schemas/milestone.schema';
   ],
   controllers: [MilestoneController],
   providers: [MilestoneService],
+  exports: [MilestoneService]
 })
 export class MilestoneModule {}

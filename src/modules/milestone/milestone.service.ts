@@ -10,8 +10,8 @@ export class MilestoneService implements IBasicService<Milestone> {
     @InjectModel(Milestone.name) private milestoneModel: Model<Milestone>
   ) { }
 
-  async create(milestoneDto: Milestone) {
-    if (!milestoneDto.numericalOrder) {
+  async create(data: Milestone) {
+    if (!data.numericalOrder) {
       const pipeline: any[] = [
         { $sort: { numericalOrder: 1 } },
         { $group: { _id: null, numericalOrders: { $push: "$numericalOrder" } } },
@@ -21,9 +21,9 @@ export class MilestoneService implements IBasicService<Milestone> {
 
       const result = await this.milestoneModel.aggregate(pipeline);
       const missingNumericalOrder = result[0]?.missingNumericalOrder;
-      milestoneDto.numericalOrder = missingNumericalOrder;
+      data.numericalOrder = missingNumericalOrder;
     }
-    const milestone = new this.milestoneModel(milestoneDto);
+    const milestone = new this.milestoneModel(data);
     await milestone.save();
     return milestone;
   }
@@ -34,8 +34,8 @@ export class MilestoneService implements IBasicService<Milestone> {
       { $sort: { numericalOrder: 1 } },
       { $skip: size * (page - 1) },
       { $limit: size }
-    ])
-    // const milestones = await this.milestoneModel.find().sort({ numericalOrder: 1 }).lean();
+    ]);
+    
     const metaData = {
       data: milestoneAggregate,
       paging: {
@@ -46,6 +46,13 @@ export class MilestoneService implements IBasicService<Milestone> {
       }
     };
     return metaData;
+  }
+
+  async getAllWithoutPaging() {
+    const milestoneAggregate = await this.milestoneModel.aggregate([
+      { $sort: { numericalOrder: 1 } }
+    ]);
+    return milestoneAggregate;
   }
 
   async getDetail(id: string) {

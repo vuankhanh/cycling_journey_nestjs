@@ -13,7 +13,7 @@ export class AuthService {
     private accountService: AccountService
   ) { }
 
-  createToken(account: AccountDocument): string {
+  createAccessToken(account: AccountDocument): string {
     const { username, role } = account;
     const payload = { username, role };
 
@@ -71,7 +71,7 @@ export class AuthService {
         secret: process.env.REFRESH_TOKEN_SECRET
       });
 
-      return this.createToken(account);
+      return this.createAccessToken(account);
     } catch (error) {
       throw new UnauthorizedException('Invalid refresh token');
     }

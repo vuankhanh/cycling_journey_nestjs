@@ -1,9 +1,11 @@
-import { Body, ConflictException, Controller, Get, Logger, Post, Request, UnauthorizedException, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, ConflictException, Controller, Get, HttpStatus, Logger, Post, Request, UnauthorizedException, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { SignUpDto } from './dto/signup.dto';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/signin.dto';
 import { AccountService } from '../../shared/services/account.service';
 import { Account } from './schemas/account.schema';
+import { FormatResponseInterceptor } from 'src/shared/interceptors/format_response.interceptor';
+import { AuthGuard } from 'src/shared/guards/auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -15,7 +17,7 @@ export class AuthController {
 
   @Post('signup')
   @UsePipes(ValidationPipe)
-  async signUp(@Body() signUpDto: SignUpDto): Promise<{ token: string, refreshToken: string }> {
+  async signUp(@Body() signUpDto: SignUpDto): Promise<{ accessToken: string, refreshToken: string }> {
     try {
       this.logger.log('Creating user.');
       const query = { username: signUpDto.username };
@@ -34,18 +36,19 @@ export class AuthController {
       );
       const account = await this.accountService.create(signUp);
 
-      const token = this.authService.createToken(account);
+      const accessToken = this.authService.createAccessToken(account);
       const refreshToken = await this.authService.createRefreshToken(account);
-      return { token, refreshToken }
+      return { accessToken, refreshToken }
     } catch (error) {
       this.logger.error('Something went wrong in signup:', error);
       throw error;
     }
   }
 
-  @Post('signin')
+  @Post('login')
   @UsePipes(ValidationPipe)
-  async signIn(@Body() signInDto: SignInDto): Promise<{ token: string, refreshToken: string }> {
+  @UseInterceptors(FormatResponseInterceptor)
+  async signIn(@Body() signInDto: SignInDto): Promise<{ accessToken: string, refreshToken: string }> {
     try {
       this.logger.log('Signing in user.');
       const { username, password } = signInDto;
@@ -54,9 +57,10 @@ export class AuthController {
         throw new UnauthorizedException('Invalid username or password');
       }
 
-      const token = this.authService.createToken(account);
+      const accessToken = this.authService.createAccessToken(account);
       const refreshToken = await this.authService.createRefreshToken(account);
-      return { token, refreshToken }
+
+      return { accessToken, refreshToken };
     } catch (error) {
       this.logger.error('Something went wrong in signin:', error);
       throw error;
@@ -74,5 +78,16 @@ export class AuthController {
       this.logger.error('Something went wrong in refreshToken:', error);
       throw error;
     }
+  }
+
+  @Post('config')
+  @UseGuards(AuthGuard)
+  @UseInterceptors(FormatResponseInterceptor)
+  config() {
+    const config = {
+      serverTime: Date.now()
+    }
+
+    return config;
   }
 }

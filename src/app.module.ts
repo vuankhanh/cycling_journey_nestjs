@@ -11,6 +11,7 @@ import { MilestoneModule } from './modules/milestone/milestone.module';
 import { AlbumModule } from './modules/album/album.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { MulterConfigProvider } from './providers/common/multer.provider';
+import { PolylineModule } from './modules/polyline/polyline.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { MulterConfigProvider } from './providers/common/multer.provider';
     ServerConfigModule,
     MilestoneModule,
     AlbumModule,
+    PolylineModule,
   ],
   controllers: [],
   providers: [],
