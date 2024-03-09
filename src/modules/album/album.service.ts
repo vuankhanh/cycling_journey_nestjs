@@ -116,7 +116,7 @@ export class AlbumService implements IBasicService<Album> {
     return milestone;
   }
 
-  private async tranformToDetaiData(conditional) {
+  private async tranformToDetaiData(conditional: Object) {
     return await this.albumModel.aggregate(
       [
         {

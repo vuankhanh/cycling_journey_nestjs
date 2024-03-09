@@ -17,6 +17,7 @@ export class AuthController {
 
   @Post('signup')
   @UsePipes(ValidationPipe)
+  @UseInterceptors(FormatResponseInterceptor)
   async signUp(@Body() signUpDto: SignUpDto): Promise<{ accessToken: string, refreshToken: string }> {
     try {
       this.logger.log('Creating user.');
@@ -69,11 +70,12 @@ export class AuthController {
 
   @Post('refresh_token')
   @UsePipes(ValidationPipe)
-  async refreshToken(@Body('refreshToken') refreshToken: string): Promise<{ token: string }> {
+  @UseInterceptors(FormatResponseInterceptor)
+  async refreshToken(@Body('refreshToken') refreshToken: string): Promise<{ accessToken: string }> {
     try {
       this.logger.log('Refreshing token.');
-      const token = await this.authService.verifyRefreshToken(refreshToken);
-      return { token }
+      const accessToken = await this.authService.verifyRefreshToken(refreshToken);
+      return { accessToken }
     } catch (error) {
       this.logger.error('Something went wrong in refreshToken:', error);
       throw error;
