@@ -7,6 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
   const staticPath = configService.get('folder.album');
+  console.log(`Static path is ${staticPath}`);
 
   app.setGlobalPrefix('api');
   app.useStaticAssets(staticPath, {
