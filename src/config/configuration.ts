@@ -13,6 +13,13 @@ export default () => {
     cache: {
       host: process.env.DEV_CACHE_HOST || 'localhost',
       port: Number(process.env.DEV_CACHE_PORT) || 6379
+    },
+    storage: {
+      protocol: process.env.DEV_STORAGE_PROTOCOL || 'http',
+      host: process.env.DEV_STORAGE_HOST || 'localhost',
+      port: Number(process.env.DEV_STORAGE_PORT) || 3105,
+      userName: process.env.DEV_STORAGE_USERNAME || 'admin',
+      password: process.env.DEV_STORAGE_PASSWORD
     }
   }
 
@@ -28,6 +35,13 @@ export default () => {
     cache: {
       host: process.env.PRO_CACHE_HOST,
       port: Number(process.env.PRO_CACHE_PORT)
+    },
+    storage: {
+      protocol: process.env.PRO_STORAGE_PROTOCOL,
+      host: process.env.PRO_STORAGE_HOST,
+      port: Number(process.env.PRO_STORAGE_PORT),
+      userName: process.env.PRO_STORAGE_USERNAME,
+      password: process.env.PRO_STORAGE_PASSWORD
     }
   }
 

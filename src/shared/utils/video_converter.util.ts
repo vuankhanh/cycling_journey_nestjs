@@ -1,7 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import * as fse from 'fs-extra';
-import * as path from "path";
 import { imageTypes, videoTypes } from "src/constants/file.constanst";
+import { Readable, Stream, Writable } from "stream";
 
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffprobePath = require("@ffprobe-installer/ffprobe").path;
@@ -13,52 +12,70 @@ ffmpeg.setFfprobePath(ffprobePath);
 export class VideoConverterUtil {
   constructor() { }
 
-  static convert(file: Express.Multer.File): Promise<Express.Multer.File> {
-    // start the progress bar with a total value of 200 and start value of 0
-    return new Promise((resolve, reject) => {
-      const filename = path.parse(file.filename).name;
-      const fileOut = file.destination + '/' + filename + '.' + videoTypes.webm.extension;
+  static convert(file: Express.Multer.File, extension: string = videoTypes.webm.extension) {
+    // Create a Readable stream from the file buffer
+    const stream = new Readable();
+    stream.push(file.buffer);
+    stream.push(null);
 
-      const outputWebmOption = ['-f', videoTypes.webm.extension, '-c:v', 'libvpx-vp9', '-b:v', '1M', '-acodec', 'libvorbis'];
-      ffmpeg(file.path)
-        .output(fileOut)
-        .outputOptions(
-          outputWebmOption
-        ).on('end', function (_) {
-          const newFile: Express.Multer.File = {
-            ...file,
-            filename: filename + '.' + videoTypes.webm.extension,
-            mimetype: videoTypes.webm.type,
-            path: fileOut,
-            size: fse.statSync(fileOut).size
-          }
+    // Create an array to store the chunks of the output
+    const chunks: any[] = [];
+    // Create a Writable stream for the output
+    const output = new Writable({
+      write(chunk, encoding, callback) {
+        chunks.push(chunk);
+        callback();
+      },
+    });
 
-          resolve(newFile);
-          fse.unlinkSync(file.path);
-        }).on('error', (error) => {
-          console.log(error);
-          reject(error)
-        }).run()
+    const outputWebmOption = ['-f', extension, '-c:v', 'libvpx-vp9', '-b:v', '1M', '-acodec', 'libvorbis'];
+    return new Promise<Buffer>((resolve, reject) => {
+      ffmpeg(stream)
+        .outputOptions(outputWebmOption)
+        .on('end', () => {
+          const result = Buffer.concat(chunks);
+          resolve(result);
+        })
+        .on('error', (error: Error) => {
+          reject(error);
+        })
+        .output(output) // Output to the stream buffer
+        .run();
     })
+
   }
 
-  static generateThumbnail(file: Express.Multer.File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const filename = path.parse(file.filename).name;
-      const thumbnailName = filename + '-thumbnail' + '.'+ imageTypes.webp.extension;
-      const fileOut = file.destination + '/' + thumbnailName;
-      
-      ffmpeg(file.path)
-        .thumbnail({
-          timestamps: ['50%'],
-          filename: thumbnailName,
-          size: '400x225',
-          folder: file.destination
-        }).on('end', function (_) {
-          resolve(fileOut)
-        }).on('error', (error) => {
+  static generateThumbnail(video: Buffer, extension: string = imageTypes.webp.extension) {
+    return new Promise<Buffer>((resolve, reject) => {
+      // Create a Readable stream from the file buffer
+      const stream = new Readable();
+      stream.push(video);
+      stream.push(null);
+
+      // Create an array to store the chunks of the output
+      const chunks: any[] = [];
+      // Create a Writable stream for the output
+      const output = new Writable({
+        write(chunk, encoding, callback) {
+          chunks.push(chunk);
+          callback();
+        },
+      });
+
+      ffmpeg(stream)
+        .outputOptions('-ss 00:00:01') // Seek to the specific timestamp
+        .outputOptions('-vframes 1') // Only output one frame (screenshot)
+        .outputOptions('-vf scale=400:225') // Set the size of the screenshot
+        .outputOptions('-f image2pipe') // Output format is a stream of images
+        .outputOptions(`-vcodec ${extension}`) // Output codec is webp
+        .on('end', () => {
+          const result = Buffer.concat(chunks);
+          resolve(result);
+        })
+        .on('error', (error: Error) => {
           reject(error)
-        });
+        }).output(output) // Output to the stream buffer
+        .run();
     })
   }
 }

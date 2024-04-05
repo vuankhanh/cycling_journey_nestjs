@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, InternalServerErrorException, Param, Patch, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ValidateCreateAlbumGuard } from './guards/validate_create_album.guard';
 import { initializationMulterOptions, modificationMulterOptions } from 'src/constants/file.constanst';
 import { AlbumDto } from './dto/album.dto';
 import { FilesProccedInterceptor } from 'src/shared/interceptors/files_procced.interceptor';
-import { MediaProcessPipe } from 'src/shared/pipes/media_process.pipe';
+import { FileProcessPipe } from 'src/shared/pipes/file_process.pipe';
 import { Album } from './schema/album.schema';
 import { IMedia } from 'src/shared/interfaces/media.interface';
 import toNoAccentVnHepler from 'src/shared/helpers/convert_vietnamese_to_no_accents.helper';
@@ -17,11 +17,16 @@ import { ValidateModifyAlbumGuard } from './guards/validate_modify_album.guard';
 import { PagingDto } from 'src/shared/dto/paging.dto';
 import { ItemsFilterDto } from './dto/items_filter.dto';
 import mongoose from 'mongoose';
+import { Request } from 'express';
+import { TPrepareFileForFormdata } from 'src/shared/interfaces/files.interface';
+import * as fse from 'fs-extra';
+import { StorageService } from '../storage/storage.service';
 
 @Controller('album')
 export class AlbumController {
   constructor(
-    private readonly albumService: AlbumService
+    private readonly albumService: AlbumService,
+    private readonly storageService: StorageService
   ) { }
 
   @Get()
@@ -54,11 +59,11 @@ export class AlbumController {
     FormatResponseInterceptor
   )
   async create(
-    @Req() req,
+    @Req() req: Request,
     @Body() body: AlbumDto,
-    @UploadedFiles(MediaProcessPipe) medias: Array<IMedia>
+    @UploadedFiles(FileProcessPipe) medias: Array<IMedia>
   ) {
-    const name = req.query.name;
+    const name = <string>req.query.name;
     const relativePath = req['customParams'].relativePath;
 
     const mainMedia = medias[body.isMain] || medias[0];
@@ -75,6 +80,83 @@ export class AlbumController {
     return await this.albumService.create(albumDoc);
   }
 
+  @Post('/ensure_path')
+  ensurePath(
+    @Query('path') path: string,
+  ){
+    return this.storageService.ensurePath(path);
+  }
+
+  @Post('/test')
+  // @UseGuards(AuthGuard, ValidateCreateAlbumGuard)
+  @UsePipes(ValidationPipe)
+  @UseInterceptors(
+    // FilesInterceptor('many-files'),
+    // FilesProccedInterceptor,
+  )
+  async testingCreate(
+    @Req() req: Request,
+    @Query('name') name: string,
+    @Body() body: AlbumDto,
+    // @UploadedFiles(FileProcessPipe) processedFiles:  Array<TPrepareFileForFormdata>
+  ) {
+    
+    const albumFolder = 'cycling-journey-album';
+    const relativePath = albumFolder + '/' + toNoAccentVnHepler(name); 
+
+    const processedFiles:  Array<TPrepareFileForFormdata> = [
+      {
+        file: {
+          originalname: '20240228_112342.webp',
+          buffer: fse.readFileSync('./uploads/20240228_112342.webp'),
+          mimetype: 'image/webp'
+        },
+        thumbnail: {
+          originalname: '20240228_112342-thumbnail.webp',
+          buffer: fse.readFileSync('./uploads/20240228_112342-thumbnail.webp'),
+          mimetype: 'image/webp'
+        }
+      },
+      {
+        file: {
+          originalname: 'pull-up (online-video-cutter.com)_2.webm',
+          buffer: fse.readFileSync('./uploads/pull-up (online-video-cutter.com)_2.webm'),
+          mimetype: 'image/webm'
+        },
+        thumbnail: {
+          originalname: 'pull-up (online-video-cutter.com)_2-thumbnail.webp',
+          buffer: fse.readFileSync('./uploads/pull-up (online-video-cutter.com)_2-thumbnail.webp'),
+          mimetype: 'image/webp'
+        }
+      }
+    ]
+
+    return this.storageService.forwardFile(relativePath, processedFiles);
+    
+    // for(let processedFile of processedFiles){
+    //   console.log(processedFile);
+    //   fse.writeFileSync(`./uploads/${processedFile.file.originalname}`, processedFile.file.buffer);
+    //   fse.writeFileSync(`./uploads/${processedFile.thumbnail.originalname}`, processedFile.thumbnail.buffer);
+    // }
+
+    // const relativePath = req['customParams'].relativePath;
+
+    // const mainMedia = medias[body.isMain] || medias[0];
+    // const thumbnail = mainMedia.thumbnailUrl;
+
+    // const albumDoc: Album = new Album(
+    //   name,
+    //   body.description,
+    //   toNoAccentVnHepler(name),
+    //   thumbnail,
+    //   medias,
+    //   relativePath
+    // )
+    // return await this.albumService.create(albumDoc);
+
+    return;
+  }
+
   @Patch(':id')
   @UseGuards(ValidateModifyAlbumGuard)
   @UsePipes(ValidationPipe)
@@ -85,7 +167,7 @@ export class AlbumController {
   async modify(
     @Param(new ValidationPipe({ whitelist: true })) { id }: MongoIdDto,
     @Body(new ValidationPipe({ transform: true })) body: AlbumModifyDto,
-    @UploadedFiles(MediaProcessPipe) medias: Array<IMedia>
+    @UploadedFiles(FileProcessPipe) medias: Array<IMedia>
   ) {
     const partialAlbumDoc: Partial<Album> = {};
 

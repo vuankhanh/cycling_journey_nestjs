@@ -1,4 +1,4 @@
-import { Body, ConflictException, Controller, Get, HttpStatus, Logger, Post, Request, UnauthorizedException, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, ConflictException, Controller, HttpCode, HttpStatus, Logger, Post, UnauthorizedException, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { SignUpDto } from './dto/signup.dto';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/signin.dto';
@@ -49,6 +49,7 @@ export class AuthController {
   @Post('login')
   @UsePipes(ValidationPipe)
   @UseInterceptors(FormatResponseInterceptor)
+  @HttpCode(HttpStatus.OK)
   async signIn(@Body() signInDto: SignInDto): Promise<{ accessToken: string, refreshToken: string }> {
     try {
       this.logger.log('Signing in user.');

@@ -12,6 +12,7 @@ import { AlbumModule } from './modules/album/album.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { MulterConfigProvider } from './providers/common/multer.provider';
 import { PolylineModule } from './modules/polyline/polyline.module';
+import { StorageModule } from './modules/storage/storage.module';
 
 @Module({
   imports: [
@@ -35,9 +36,8 @@ import { PolylineModule } from './modules/polyline/polyline.module';
     MilestoneModule,
     AlbumModule,
     PolylineModule,
-  ],
-  controllers: [],
-  providers: [],
+    StorageModule,
+  ]
 })
 export class AppModule {
   logger: Logger = new Logger(AppModule.name);
@@ -47,9 +47,9 @@ export class AppModule {
     private configService: ConfigService
   ) {
     AppModule.port = this.configService.get<number>('app.port');
-
+    
     const client = cacheManager.store.getClient();
-
+    
     client.on('error', (error: Error) => {
       this.logger.error(error.message);
     })

@@ -7,6 +7,7 @@ import { ValidateCreateAlbumGuard } from './guards/validate_create_album.guard';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from 'src/shared/guards/auth.guard';
 import { Media, mediaSchema } from './schema/media.schema';
+import { StorageModule } from '../storage/storage.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { Media, mediaSchema } from './schema/media.schema';
         name: Media.name,
         schema: mediaSchema
       }
-    ])
+    ]),
+    StorageModule
   ],
   controllers: [AlbumController],
   providers: [AlbumService, ValidateCreateAlbumGuard, ConfigService, AuthGuard],

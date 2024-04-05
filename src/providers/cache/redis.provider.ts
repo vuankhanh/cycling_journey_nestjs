@@ -14,7 +14,7 @@ export class RedisProvider implements CacheOptionsFactory {
       isGlobal: true,
       store: redisStore,
       host: this.configService.get('cache.host'),
-      port: this.configService.get('cache.port'),
+      port: Number(this.configService.get('cache.port')),
     }
   }
 
