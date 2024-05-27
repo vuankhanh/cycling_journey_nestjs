@@ -9,6 +9,7 @@ async function bootstrap() {
   const staticPath = configService.get('folder.album');
   console.log(`Static path is ${staticPath}`);
 
+  app.enableCors();
   app.setGlobalPrefix('api');
   app.useStaticAssets(staticPath, {
     prefix: '/static/',

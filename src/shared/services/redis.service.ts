@@ -1,48 +1,25 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
+import { Cache, Store } from 'cache-manager';
 
 @Injectable()
 export class RedisService {
-  client = this.cacheManager.store;;
+  client: Store;
   constructor(
-    @Inject(CACHE_MANAGER) private cacheManager
+    @Inject(CACHE_MANAGER) private cacheManager: Cache
   ) {
-    this.get('facebookUser').then((result) => {
-      console.log(result);
-      
-    })
+    this.client = cacheManager.store;
   }
 
   get(key: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.client.get(key, (err, data: any) => {
-        if (err) {
-          reject(err);
-        }
-        resolve(data);
-      });
-    })
+    return this.client.get(key);
   }
 
-  set(key: string, value: any, ttl: number = 0): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      this.client.set(key, value, { ttl }, (err) => {
-        if (err) {
-          reject(err);
-        }
-        resolve(true);
-      });
-    })
+  set(key: string, value: any, ttl: number = 0) {
+    return this.client.set(key, value, ttl)
   }
 
-  del(key: string): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      this.client.del(key, (err) => {
-        if (err) {
-          reject(err);
-        }
-        resolve(true);
-      });
-    })
+  del(key: string) {
+    return this.client.del(key);
   }
 }
